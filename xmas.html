@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<title>圣诞快乐</title>
+<style>
+body {
+    margin: 0;
+    background: linear-gradient(45deg, #001845, #000, #2a0045, #000);
+    background-size: 400% 400%;
+    animation: gradientBG 15s ease infinite;
+    color: #fff;
+    font-family: Consolas, monospace;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+@keyframes gradientBG {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+pre {
+    line-height: 1.5em;
+    font-size: 22px;
+    text-shadow: 0 0 3px #2e7d32;
+    text-align: center;
+}
+
+/* --- Crucial for alignment --- */
+/* This ensures every character, including spaces, has a fixed-width container */
+pre span {
+    display: inline-block;
+    width: 1ch; /* Each span occupies one character width */
+    text-align: center;
+}
+/* ----------------------------- */
+
+.leaf {
+    color: #2a9d8f;
+}
+
+@keyframes twinkle {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+@keyframes star-flow {
+    0% { text-shadow: 0 0 10px #ffdd00, 0 0 20px #ffdd00, 0 0 30px #fff, 0 0 40px #0ff, 0 0 70px #0ff; }
+    50% { text-shadow: 0 0 10px #ffdd00, 0 0 25px #ffdd00, 0 0 40px #fff, 0 0 60px #f0f, 0 0 90px #f0f; }
+    100% { text-shadow: 0 0 10px #ffdd00, 0 0 20px #ffdd00, 0 0 30px #fff, 0 0 40px #0ff, 0 0 70px #0ff; }
+}
+
+#star {
+    animation: twinkle 1.5s infinite, star-flow 2.5s infinite;
+}
+
+.light {
+    animation: blink 2s infinite;
+}
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+.c1 { color: #ffadad; text-shadow: 0 0 5px #ffadad; }
+.c2 { color: #ffd6a5; text-shadow: 0 0 5px #ffd6a5; }
+.c3 { color: #fdffb6; text-shadow: 0 0 5px #fdffb6; }
+.c4 { color: #caffbf; text-shadow: 0 0 5px #caffbf; }
+.c5 { color: #9bf6ff; text-shadow: 0 0 5px #9bf6ff; }
+.c6 { color: #a0c4ff; text-shadow: 0 0 5px #a0c4ff; }
+.c7 { color: #bdb2ff; text-shadow: 0 0 5px #bdb2ff; }
+
+.trunk { color: #8B4513; }
+.base { color: #966F33; }
+
+#wish {
+    color: #ffd166;
+    margin-top: 30px;
+    font-size: 26px;
+    letter-spacing: 3px;
+    font-family: 'KaiTi', 'SimSun', sans-serif;
+    text-shadow: 0 0 5px #ffd166, 0 0 10px #ffd166;
+    animation: fadeIn 3s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.snow {
+    position: fixed;
+    top: -10px;
+    color: #fff;
+    animation: fall linear infinite;
+    text-shadow: 0 0 3px #fff;
+}
+@keyframes fall {
+    to {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+    }
+}
+</style>
+</head>
+<body>
+<pre id="tree"></pre>
+<div id="wish"></div>
+
+<script>
+/* ===== 在这里修改你的祝福语 ===== */
+const myWish = "啊紫，愿你被这个世界温柔以待，平安喜乐，万事胜意！";
+
+/* ===== 圣诞树参数 ===== */
+const H = 20;
+const STAR = '⭐';
+const LIGHT_CHANCE = 0.15;
+const lightColors = ['c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7'];
+const LEAF_TYPES = ['*', "'", "·"]; /* More realistic leaf characters */
+
+/* ===== 直接生成带有HTML标签的圣诞树 ===== */
+let treeHTML = '';
+
+// 树顶的星星 (Guaranteed alignment)
+treeHTML += '<span> </span>'.repeat(H) + `<span id="star">${STAR}</span>\n`;
+
+// 树冠 (Canopy)
+for (let i = 1; i <= H; i++) {
+    let line = '<span> </span>'.repeat(H - i); /* Leading spaces */
+    for (let j = 0; j < 2 * i - 1; j++) {
+        const leafChar = LEAF_TYPES[Math.floor(Math.random() * LEAF_TYPES.length)];
+        if (Math.random() < LIGHT_CHANCE) {
+            const colorClass = lightColors[Math.floor(Math.random() * lightColors.length)];
+            line += `<span class="light ${colorClass}">${leafChar}</span>`;
+        } else {
+            line += `<span class="leaf">${leafChar}</span>`;
+        }
+    }
+    treeHTML += line + '\n';
+}
+
+// 树干 (Trunk)
+const trunkWidth = 3;
+const trunkHeight = 2;
+const trunkStr = '<span class="trunk">|</span>'.repeat(trunkWidth);
+for (let _ = 0; _ < trunkHeight; _++) {
+    treeHTML += '<span> </span>'.repeat(H - Math.floor(trunkWidth / 2)) + trunkStr + '\n';
+}
+
+// 树底座 (Base)
+const baseWidth = 9;
+const baseStr = '<span class="base">\\</span>' + '<span class="base">_</span>'.repeat(baseWidth - 2) + '<span class="base">/</span>';
+treeHTML += '<span> </span>'.repeat(H - Math.floor(baseWidth / 2)) + baseStr + '\n';
+
+
+// 将装饰好的HTML内容放入页面元素中
+document.getElementById('tree').innerHTML = treeHTML;
+document.getElementById('wish').textContent = `💌 ${myWish}`;
+
+/* ===== 雪花效果 ===== */
+const snowflakeChars = ['❄️', '❆', '❅', '❈'];
+setInterval(() => {
+    const s = document.createElement('div');
+    s.className = 'snow';
+    s.textContent = snowflakeChars[Math.floor(Math.random() * snowflakeChars.length)];
+    s.style.left = Math.random() * 100 + 'vw';
+    s.style.animationDuration = (Math.random() * 5 + 5) + 's';
+    s.style.opacity = Math.random();
+    s.style.fontSize = Math.random() * 10 + 10 + 'px';
+    s.style.animationDelay = Math.random() * 5 + 's';
+
+    document.body.appendChild(s);
+    setTimeout(() => s.remove(), 10000);
+}, 150);
+</script>
+</body>
+</html>
