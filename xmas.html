@@ -28,22 +28,35 @@ body {
 pre {
     line-height: 1.5em;
     font-size: 22px;
-    text-shadow: 0 0 3px #2e7d32, 0 0 8px #2e7d32; /* Base green glow for the whole tree */
+    text-shadow: 0 0 3px #2e7d32;
     text-align: center;
 }
 
-.leaf {
-    color: #2a9d8f; /* A nice shade of green for non-light leaves */
-}
-
-#star {
+/* --- Crucial for alignment --- */
+/* This ensures every character, including spaces, has a fixed-width container */
+pre span {
     display: inline-block;
-    animation: twinkle 1.5s infinite;
+    width: 1ch; /* Each span occupies one character width */
+    text-align: center;
+}
+/* ----------------------------- */
+
+.leaf {
+    color: #2a9d8f;
 }
 
 @keyframes twinkle {
-    0%, 100% { transform: scale(1); text-shadow: 0 0 10px #ffdd00, 0 0 20px #ffdd00; }
-    50% { transform: scale(1.2); text-shadow: 0 0 20px #ffdd00, 0 0 40px #ffdd00; }
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+@keyframes star-flow {
+    0% { text-shadow: 0 0 10px #ffdd00, 0 0 20px #ffdd00, 0 0 30px #fff, 0 0 40px #0ff, 0 0 70px #0ff; }
+    50% { text-shadow: 0 0 10px #ffdd00, 0 0 25px #ffdd00, 0 0 40px #fff, 0 0 60px #f0f, 0 0 90px #f0f; }
+    100% { text-shadow: 0 0 10px #ffdd00, 0 0 20px #ffdd00, 0 0 30px #fff, 0 0 40px #0ff, 0 0 70px #0ff; }
+}
+
+#star {
+    animation: twinkle 1.5s infinite, star-flow 2.5s infinite;
 }
 
 .light {
@@ -60,6 +73,9 @@ pre {
 .c5 { color: #9bf6ff; text-shadow: 0 0 5px #9bf6ff; }
 .c6 { color: #a0c4ff; text-shadow: 0 0 5px #a0c4ff; }
 .c7 { color: #bdb2ff; text-shadow: 0 0 5px #bdb2ff; }
+
+.trunk { color: #8B4513; }
+.base { color: #966F33; }
 
 #wish {
     color: #ffd166;
@@ -97,70 +113,55 @@ pre {
 
 <script>
 /* ===== 在这里修改你的祝福语 ===== */
-const myWish = "朱广宇，愿你被这个世界温柔以待，平安喜乐，万事胜意！";
+const myWish = "啊紫，愿你被这个世界温柔以待，平安喜乐，万事胜意！";
 
 /* ===== 圣诞树参数 ===== */
-const H = 20; // 树的高度
+const H = 20;
 const STAR = '⭐';
-const LEAF = '*'; // 使用 '*' 作为叶子图案
-const TRUNK = '┃';
-const LIGHT_CHANCE = 0.15; // 彩灯出现的概率
+const LIGHT_CHANCE = 0.15;
 const lightColors = ['c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7'];
+const LEAF_TYPES = ['*', "'", "·"]; /* More realistic leaf characters */
 
-/* ===== 1. 首先，生成一个纯文本的、完美对齐的圣诞树 ===== */
-let treeText = '';
-
-// 树顶的星星
-treeText += ' '.repeat(H) + STAR + '\n';
-
-// 树叶部分
-for (let i = 1; i <= H; i++) {
-  const leaves = LEAF.repeat(2 * i - 1);
-  treeText += ' '.repeat(H - i) + leaves + '\n';
-}
-
-// 树干部分
-for (let _ = 0; _ < 3; _++) {
-    treeText += ' '.repeat(H - 1) + TRUNK.repeat(1) + '\n';
-}
-// 树底座
-treeText += ' '.repeat(H - 2) + '╰╮╰╮\n';
-
-
-/* ===== 2. 然后，将纯文本树“装饰”成带有HTML样式的版本 ===== */
+/* ===== 直接生成带有HTML标签的圣诞树 ===== */
 let treeHTML = '';
-const lines = treeText.split('\n');
 
-// 单独处理第一行，为星星添加动画
-const starLine = lines[0];
-treeHTML += starLine.replace(STAR, "<span id=\"star\">${STAR}</span>") + '\n';
+// 树顶的星星 (Guaranteed alignment)
+treeHTML += '<span> </span>'.repeat(H) + `<span id="star">${STAR}</span>\n`;
 
-// 处理剩下的每一行
-for (let i = 1; i < lines.length; i++) {
-    let decoratedLine = '';
-    for (const char of lines[i]) {
-        // 如果字符是叶子，且随机数满足条件，则将其变为彩灯
-        if (char === LEAF && Math.random() < LIGHT_CHANCE) {
+// 树冠 (Canopy)
+for (let i = 1; i <= H; i++) {
+    let line = '<span> </span>'.repeat(H - i); /* Leading spaces */
+    for (let j = 0; j < 2 * i - 1; j++) {
+        const leafChar = LEAF_TYPES[Math.floor(Math.random() * LEAF_TYPES.length)];
+        if (Math.random() < LIGHT_CHANCE) {
             const colorClass = lightColors[Math.floor(Math.random() * lightColors.length)];
-            decoratedLine += `<span class="light ${colorClass}">${LEAF}</span>`;
-        } 
-        // 如果只是普通的叶子，给它一个基础的叶子样式
-        else if (char === LEAF) {
-            decoratedLine += `<span class="leaf">${LEAF}</span>`;
-        }
-        // 其他字符（如空格、树干）保持原样
-        else {
-            decoratedLine += char;
+            line += `<span class="light ${colorClass}">${leafChar}</span>`;
+        } else {
+            line += `<span class="leaf">${leafChar}</span>`;
         }
     }
-    treeHTML += decoratedLine + '\n';
+    treeHTML += line + '\n';
 }
+
+// 树干 (Trunk)
+const trunkWidth = 3;
+const trunkHeight = 2;
+const trunkStr = '<span class="trunk">|</span>'.repeat(trunkWidth);
+for (let _ = 0; _ < trunkHeight; _++) {
+    treeHTML += '<span> </span>'.repeat(H - Math.floor(trunkWidth / 2)) + trunkStr + '\n';
+}
+
+// 树底座 (Base)
+const baseWidth = 9;
+const baseStr = '<span class="base">\\</span>' + '<span class="base">_</span>'.repeat(baseWidth - 2) + '<span class="base">/</span>';
+treeHTML += '<span> </span>'.repeat(H - Math.floor(baseWidth / 2)) + baseStr + '\n';
+
 
 // 将装饰好的HTML内容放入页面元素中
 document.getElementById('tree').innerHTML = treeHTML;
 document.getElementById('wish').textContent = `💌 ${myWish}`;
 
-/* ===== 雪花效果 (无需改动) ===== */
+/* ===== 雪花效果 ===== */
 const snowflakeChars = ['❄️', '❆', '❅', '❈'];
 setInterval(() => {
     const s = document.createElement('div');
