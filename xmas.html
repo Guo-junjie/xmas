@@ -1,181 +1,366 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="utf-8"/>
-<title>圣诞快乐</title>
-<style>
-body {
-    margin: 0;
-    background: linear-gradient(45deg, #001845, #000, #2a0045, #000);
-    background-size: 400% 400%;
-    animation: gradientBG 15s ease infinite;
-    color: #fff;
-    font-family: Consolas, monospace;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>工业智能监控系统 | Industrial Dashboard</title>
+    <style>
+        /* --- 1. 全局变量与重置 --- */
+        :root {
+            --bg-body: #121212;       /* 最深背景 */
+            --bg-sidebar: #1e1e2e;    /* 侧边栏/头部背景 */
+            --bg-card: #27293d;       /* 卡片背景 */
+            --text-main: #ffffff;
+            --text-muted: #aab8c5;
+            --color-primary: #1d8cf8; /* 蓝色强调 */
+            --color-success: #00f2c3; /* 绿色正常 */
+            --color-warning: #ff8d72; /* 橙色警告 */
+            --color-danger: #fd5d93;  /* 红色报警 */
+            --border-color: #2b3553;
+        }
 
-@keyframes gradientBG {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
-pre {
-    line-height: 1.5em;
-    font-size: 22px;
-    text-shadow: 0 0 3px #2e7d32;
-    text-align: center;
-}
+        body {
+            font-family: "Segoe UI", "Roboto", "Helvetica Neue", sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            overflow: hidden; /* 防止出现双滚动条 */
+        }
 
-/* --- Crucial for alignment --- */
-/* This ensures every character, including spaces, has a fixed-width container */
-pre span {
-    display: inline-block;
-    width: 1ch; /* Each span occupies one character width */
-    text-align: center;
-}
-/* ----------------------------- */
+        /* --- 2. 侧边栏 (Sidebar) --- */
+        .sidebar {
+            width: 220px;
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            padding: 20px 0;
+        }
+        .logo-area {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 40px;
+            color: var(--color-primary);
+            letter-spacing: 1px;
+        }
+        .nav-item {
+            padding: 15px 25px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
+        }
+        .nav-item:hover, .nav-item.active {
+            background-color: rgba(29, 140, 248, 0.1);
+            color: var(--text-main);
+            border-left-color: var(--color-primary);
+        }
 
-.leaf {
-    color: #2a9d8f;
-}
+        /* --- 3. 主内容区 (Main Content) --- */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto; /* 内容过多时滚动 */
+        }
 
-@keyframes twinkle {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.2); }
-}
-@keyframes star-flow {
-    0% { text-shadow: 0 0 10px #ffdd00, 0 0 20px #ffdd00, 0 0 30px #fff, 0 0 40px #0ff, 0 0 70px #0ff; }
-    50% { text-shadow: 0 0 10px #ffdd00, 0 0 25px #ffdd00, 0 0 40px #fff, 0 0 60px #f0f, 0 0 90px #f0f; }
-    100% { text-shadow: 0 0 10px #ffdd00, 0 0 20px #ffdd00, 0 0 30px #fff, 0 0 40px #0ff, 0 0 70px #0ff; }
-}
+        /* 头部 Header */
+        header {
+            height: 60px;
+            background-color: var(--bg-sidebar);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+        }
+        .sys-status {
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+        }
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background-color: var(--color-success);
+            border-radius: 50%;
+            margin-right: 8px;
+            box-shadow: 0 0 10px var(--color-success); /* 荧光效果 */
+        }
+        .user-info {
+            font-size: 14px;
+            color: var(--text-muted);
+            font-family: monospace; /* 适合显示时间 */
+        }
 
-#star {
-    animation: twinkle 1.5s infinite, star-flow 2.5s infinite;
-}
+        /* 仪表盘网格布局 Dashboard Grid */
+        .dashboard-container {
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* 4列 */
+            grid-template-rows: 120px 350px 1fr;   /* 3行高度定义 */
+            gap: 20px;
+            height: calc(100vh - 60px);
+        }
 
-.light {
-    animation: blink 2s infinite;
-}
-@keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.6; }
-}
-.c1 { color: #ffadad; text-shadow: 0 0 5px #ffadad; }
-.c2 { color: #ffd6a5; text-shadow: 0 0 5px #ffd6a5; }
-.c3 { color: #fdffb6; text-shadow: 0 0 5px #fdffb6; }
-.c4 { color: #caffbf; text-shadow: 0 0 5px #caffbf; }
-.c5 { color: #9bf6ff; text-shadow: 0 0 5px #9bf6ff; }
-.c6 { color: #a0c4ff; text-shadow: 0 0 5px #a0c4ff; }
-.c7 { color: #bdb2ff; text-shadow: 0 0 5px #bdb2ff; }
+        /* 通用卡片样式 */
+        .card {
+            background-color: var(--bg-card);
+            border-radius: 4px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        .card-title {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
 
-.trunk { color: #8B4513; }
-.base { color: #966F33; }
+        /* 第一行：KPI 指标 */
+        .kpi-card {
+            grid-column: span 1; /* 占1列 */
+            justify-content: space-between;
+        }
+        .kpi-value {
+            font-size: 32px;
+            font-weight: bold;
+            font-family: 'Courier New', monospace; /* 等宽字体方便读数 */
+        }
+        .kpi-unit {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-left: 5px;
+        }
+        .trend {
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+        }
+        .trend.up { color: var(--color-success); }
+        .trend.down { color: var(--color-danger); }
 
-#wish {
-    color: #ffd166;
-    margin-top: 30px;
-    font-size: 26px;
-    letter-spacing: 3px;
-    font-family: 'KaiTi', 'SimSun', sans-serif;
-    text-shadow: 0 0 5px #ffd166, 0 0 10px #ffd166;
-    animation: fadeIn 3s ease-in;
-}
+        /* 第二行：核心可视化 + 趋势图 */
+        .visual-section {
+            grid-column: span 3; /* 占左边3列 */
+            position: relative;
+            background-image: radial-gradient(var(--border-color) 1px, transparent 1px);
+            background-size: 20px 20px; /* 模拟网格背景 */
+        }
+        .chart-section {
+            grid-column: span 1; /* 占右边1列 */
+        }
 
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
+        /* 模拟设备拓扑图中的数据点 */
+        .device-node {
+            position: absolute;
+            background: rgba(30, 30, 46, 0.9);
+            border: 1px solid var(--color-primary);
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            min-width: 120px;
+        }
+        /* 简单的定位模拟 */
+        .node-1 { top: 30%; left: 20%; }
+        .node-2 { top: 50%; left: 60%; }
+        .node-line {
+            position: absolute;
+            top: 45%; left: 25%;
+            width: 300px; height: 2px;
+            background: linear-gradient(90deg, var(--color-primary), transparent);
+        }
 
-.snow {
-    position: fixed;
-    top: -10px;
-    color: #fff;
-    animation: fall linear infinite;
-    text-shadow: 0 0 3px #fff;
-}
-@keyframes fall {
-    to {
-        transform: translateY(100vh) rotate(360deg);
-        opacity: 0;
-    }
-}
-</style>
+        /* 第三行：报警列表 */
+        .alarm-section {
+            grid-column: span 4; /* 占满整行 */
+            overflow: hidden;
+        }
+        
+        /* 表格样式 */
+        .alarm-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        .alarm-table th {
+            text-align: left;
+            padding: 10px;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .alarm-table td {
+            padding: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .tag {
+            padding: 2px 8px;
+            border-radius: 2px;
+            font-size: 12px;
+        }
+        .tag-danger { background: rgba(253, 93, 147, 0.2); color: var(--color-danger); }
+        .tag-warn { background: rgba(255, 141, 114, 0.2); color: var(--color-warning); }
+
+    </style>
 </head>
 <body>
-<pre id="tree"></pre>
-<div id="wish"></div>
 
-<script>
-/* ===== 在这里修改你的祝福语 ===== */
-const myWish = "啊紫，愿你被这个世界温柔以待，平安喜乐，万事胜意！";
+    <nav class="sidebar">
+        <div class="logo-area">IMS V2.0</div>
+        <div class="nav-item active">📊 总览 Dashboard</div>
+        <div class="nav-item">🏭 设备监控 Monitor</div>
+        <div class="nav-item">📑 生产报表 Report</div>
+        <div class="nav-item">🚨 报警记录 Alarm</div>
+        <div class="nav-item">⚙️ 系统设置 Config</div>
+    </nav>
 
-/* ===== 圣诞树参数 ===== */
-const H = 20;
-const STAR = '⭐';
-const LIGHT_CHANCE = 0.15;
-const lightColors = ['c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7'];
-const LEAF_TYPES = ['*', "'", "·"]; /* More realistic leaf characters */
+    <main class="main-content">
+        <header>
+            <div class="sys-status">
+                <div class="status-dot"></div>
+                <span>系统运行正常 | 通讯延迟: 12ms</span>
+            </div>
+            <div class="user-info">
+                Operator: Admin | <span id="clock">12:00:00</span>
+            </div>
+        </header>
 
-/* ===== 直接生成带有HTML标签的圣诞树 ===== */
-let treeHTML = '';
+        <div class="dashboard-container">
+            
+            <div class="card kpi-card">
+                <div class="card-title">今日产量 (Output)</div>
+                <div class="kpi-value" id="val-output">12,450</div>
+                <div class="trend up">▲ 5.2% 同比增长</div>
+            </div>
+            <div class="card kpi-card">
+                <div class="card-title">设备综合效率 (OEE)</div>
+                <div class="kpi-value" style="color: var(--color-success)">92.5<span class="kpi-unit">%</span></div>
+                <div class="trend">运行平稳</div>
+            </div>
+            <div class="card kpi-card">
+                <div class="card-title">总能耗 (Energy)</div>
+                <div class="kpi-value">482<span class="kpi-unit">kWh</span></div>
+                <div class="trend down">▼ 1.2% 节能优化</div>
+            </div>
+            <div class="card kpi-card">
+                <div class="card-title">待处理报警 (Alerts)</div>
+                <div class="kpi-value" style="color: var(--color-danger)">3</div>
+                <div class="trend">需立即处理</div>
+            </div>
 
-// 树顶的星星 (Guaranteed alignment)
-treeHTML += '<span> </span>'.repeat(H) + `<span id="star">${STAR}</span>\n`;
+            <div class="card visual-section">
+                <div class="card-title">产线实时拓扑 (Digital Twin Mockup)</div>
+                <div class="node-line"></div>
+                <div class="device-node node-1">
+                    <div style="color:var(--color-primary); margin-bottom:5px;">🔵 注塑机 A01</div>
+                    <div>温度: <span id="val-temp" style="font-weight:bold; color:#fff;">145</span> °C</div>
+                    <div>压力: 12.5 MPa</div>
+                </div>
+                <div class="device-node node-2">
+                    <div style="color:var(--color-success); margin-bottom:5px;">🟢 传送带 M02</div>
+                    <div>速度: 2.5 m/s</div>
+                    <div>计数: 4500 pcs</div>
+                </div>
+            </div>
 
-// 树冠 (Canopy)
-for (let i = 1; i <= H; i++) {
-    let line = '<span> </span>'.repeat(H - i); /* Leading spaces */
-    for (let j = 0; j < 2 * i - 1; j++) {
-        const leafChar = LEAF_TYPES[Math.floor(Math.random() * LEAF_TYPES.length)];
-        if (Math.random() < LIGHT_CHANCE) {
-            const colorClass = lightColors[Math.floor(Math.random() * lightColors.length)];
-            line += `<span class="light ${colorClass}">${leafChar}</span>`;
-        } else {
-            line += `<span class="leaf">${leafChar}</span>`;
+            <div class="card chart-section">
+                <div class="card-title">主轴负荷趋势 (Load)</div>
+                <div style="display:flex; align-items:flex-end; height:100%; justify-content:space-between; padding-top:20px;">
+                    <div style="width:15%; background:var(--color-primary); height:40%; opacity:0.5"></div>
+                    <div style="width:15%; background:var(--color-primary); height:60%; opacity:0.7"></div>
+                    <div style="width:15%; background:var(--color-primary); height:80%;"></div>
+                    <div style="width:15%; background:var(--color-danger); height:95%;"></div> <div style="width:15%; background:var(--color-primary); height:50%;"></div>
+                </div>
+            </div>
+
+            <div class="card alarm-section">
+                <div class="card-title">实时报警列表 (Live Alarms)</div>
+                <table class="alarm-table">
+                    <thead>
+                        <tr>
+                            <th>时间</th>
+                            <th>级别</th>
+                            <th>设备</th>
+                            <th>报警内容</th>
+                            <th>状态</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>10:45:22</td>
+                            <td><span class="tag tag-danger">高危</span></td>
+                            <td>注塑机 A01</td>
+                            <td>液压油温过高 (>65°C)</td>
+                            <td>未确认</td>
+                        </tr>
+                        <tr>
+                            <td>10:42:10</td>
+                            <td><span class="tag tag-warn">警告</span></td>
+                            <td>机械臂 R03</td>
+                            <td>抓取动作超时</td>
+                            <td>自动复位</td>
+                        </tr>
+                        <tr>
+                            <td>09:30:05</td>
+                            <td><span class="tag tag-warn">警告</span></td>
+                            <td>网络模块</td>
+                            <td>通讯丢包率上升</td>
+                            <td>已恢复</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // --- 简单的动态效果模拟 ---
+
+        // 1. 更新时钟
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('zh-CN', { hour12: false });
+            document.getElementById('clock').innerText = timeString;
         }
-    }
-    treeHTML += line + '\n';
-}
+        setInterval(updateTime, 1000);
+        updateTime();
 
-// 树干 (Trunk)
-const trunkWidth = 3;
-const trunkHeight = 2;
-const trunkStr = '<span class="trunk">|</span>'.repeat(trunkWidth);
-for (let _ = 0; _ < trunkHeight; _++) {
-    treeHTML += '<span> </span>'.repeat(H - Math.floor(trunkWidth / 2)) + trunkStr + '\n';
-}
+        // 2. 模拟数据跳动 (让界面看起来是活的)
+        function simulateData() {
+            // 模拟温度波动
+            const tempEl = document.getElementById('val-temp');
+            let currentTemp = parseFloat(tempEl.innerText);
+            // 随机加减 0.5
+            let change = (Math.random() - 0.5); 
+            let newTemp = (currentTemp + change).toFixed(1);
+            tempEl.innerText = newTemp;
 
-// 树底座 (Base)
-const baseWidth = 9;
-const baseStr = '<span class="base">\\</span>' + '<span class="base">_</span>'.repeat(baseWidth - 2) + '<span class="base">/</span>';
-treeHTML += '<span> </span>'.repeat(H - Math.floor(baseWidth / 2)) + baseStr + '\n';
+            // 简单的颜色警告逻辑
+            if(newTemp > 146) {
+                tempEl.style.color = 'var(--color-danger)';
+            } else {
+                tempEl.style.color = '#fff';
+            }
 
-
-// 将装饰好的HTML内容放入页面元素中
-document.getElementById('tree').innerHTML = treeHTML;
-document.getElementById('wish').textContent = `💌 ${myWish}`;
-
-/* ===== 雪花效果 ===== */
-const snowflakeChars = ['❄️', '❆', '❅', '❈'];
-setInterval(() => {
-    const s = document.createElement('div');
-    s.className = 'snow';
-    s.textContent = snowflakeChars[Math.floor(Math.random() * snowflakeChars.length)];
-    s.style.left = Math.random() * 100 + 'vw';
-    s.style.animationDuration = (Math.random() * 5 + 5) + 's';
-    s.style.opacity = Math.random();
-    s.style.fontSize = Math.random() * 10 + 10 + 'px';
-    s.style.animationDelay = Math.random() * 5 + 's';
-
-    document.body.appendChild(s);
-    setTimeout(() => s.remove(), 10000);
-}, 150);
-</script>
+            // 模拟产量增加
+            const outEl = document.getElementById('val-output');
+            // 30% 概率增加 1
+            if(Math.random() > 0.7) {
+                let currentOut = parseInt(outEl.innerText.replace(',', ''));
+                outEl.innerText = (currentOut + 1).toLocaleString();
+            }
+        }
+        
+        // 每 2 秒刷新一次模拟数据
+        setInterval(simulateData, 2000);
+    </script>
 </body>
 </html>
